@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Negative Mark Calculator</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            text-align: center;
+            padding: 20px;
+            transition: background 0.3s, color 0.3s;
+        }
+        .container {
+            max-width: 400px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            transition: background 0.3s, color 0.3s;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            background: #28a745;
+            color: white;
+            padding: 10px;
+            border: none;
+            width: 100%;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background: #218838;
+        }
+        .toggle-dark {
+            background: #333;
+            color: white;
+        }
+        .dark-mode {
+            background: #121212;
+            color: white;
+        }
+        .dark-mode .container {
+            background: #222;
+        }
+        .result {
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+        canvas {
+            max-width: 100%;
+            margin-top: 20px;
+        }
+        .history {
+            margin-top: 20px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+
+<button onclick="toggleDarkMode()">🌙 Toggle Dark Mode</button>
+
+<div class="container">
+    <h2>Negative Mark Calculator</h2>
+    <label>Total Questions:</label>
+    <input type="number" id="totalQuestions" placeholder="Enter total questions">
+
+    <label>Marks per Correct Answer:</label>
+    <input type="number" id="marksPerCorrect" placeholder="Enter marks per correct answer">
+
+    <label>Negative Marks per Wrong Answer:</label>
+    <input type="number" id="negativeMarks" placeholder="Enter negative marks per wrong answer">
+
+    <label>Correct Answers Attempted:</label>
+    <input type="number" id="correctAnswers" placeholder="Enter correct answers attempted">
+
+    <button onclick="calculateScore()">Calculate Score</button>
+
+    <div class="result" id="result"></div>
+
+    <canvas id="scoreChart"></canvas>
+
+    <div class="history">
+        <h3>History:</h3>
+        <ul id="historyList"></ul>
+    </div>
+</div>
+
+<script>
+    function calculateScore() {
+        let totalQuestions = parseInt(document.getElementById("totalQuestions").value);
+        let marksPerCorrect = parseFloat(document.getElementById("marksPerCorrect").value);
+        let negativeMarks = parseFloat(document.getElementById("negativeMarks").value);
+        let correctAnswers = parseInt(document.getElementById("correctAnswers").value);
+
+        if (isNaN(totalQuestions) || isNaN(marksPerCorrect) || isNaN(negativeMarks) || isNaN(correctAnswers)) {
+            document.getElementById("result").innerHTML = "❌ Please enter valid numbers!";
+            return;
+        }
+
+        if (correctAnswers > totalQuestions) {
+            document.getElementById("result").innerHTML = "⚠️ Correct answers cannot be more than total questions!";
+            return;
+        }
+
+        let wrongAnswers = totalQuestions - correctAnswers;
+        let score = (correctAnswers * marksPerCorrect) - (wrongAnswers * negativeMarks);
+
+        document.getElementById("result").innerHTML = `
+            <p>✅ Final Score: <strong>${score}</strong></p>
+            <p>✔️ Correct Answers: ${correctAnswers}</p>
+            <p>❌ Wrong Answers: ${wrongAnswers}</p>
+        `;
+
+        updateChart(correctAnswers, wrongAnswers);
+        addToHistory(totalQuestions, correctAnswers, wrongAnswers, score);
+    }
+
+    function toggleDarkMode() {
+        document.body.classList.toggle("dark-mode");
+    }
+
+    function updateChart(correct, wrong) {
+        let ctx = document.getElementById("scoreChart").getContext("2d");
+        
+        if (window.myChart) {
+            window.myChart.destroy();
+        }
+
+        window.myChart = new Chart(ctx, {
+            type: "pie",
+            data: {
+                labels: ["Correct Answers", "Wrong Answers"],
+                datasets: [{
+                    data: [correct, wrong],
+                    backgroundColor: ["#28a745", "#dc3545"]
+                }]
+            }
+        });
+    }
+
+    function addToHistory(total, correct, wrong, score) {
+        let historyList = document.getElementById("historyList");
+        let listItem = document.createElement("li");
+        listItem.innerHTML = `📌 <strong>Total:</strong> ${total}, ✔️ ${correct}, ❌ ${wrong}, 🎯 Score: ${score}`;
+        historyList.prepend(listItem);
+    }
+</script>
+
+</body>
+</html>
